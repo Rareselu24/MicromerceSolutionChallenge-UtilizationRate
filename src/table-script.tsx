@@ -22,23 +22,24 @@ import { Rowing } from "@mui/icons-material";
  * @prop {number} netEarningsPrevMonth - The net earnings for the previous month.
  */
 
+let euro = Intl.NumberFormat('de-DE', {
+  style: 'currency',
+  currency: 'EUR',
+});
 
-
-const tableData: TableDataType[] = (
-  sourceData as unknown as SourceDataType[]
-).map((dataRow, index) => {
-  const person = `${dataRow?.employees?.name ?? dataRow?.externals?.name ?? " Team"}`;
+const tableData: TableDataType[] = (sourceData as unknown as SourceDataType[])
+  .filter((dataRow) => dataRow.teams === undefined)
+  .map((dataRow) => {
+  const person = `${dataRow?.employees?.name ?? dataRow?.externals?.name}`;
   const past12Months = parseFloat(dataRow?.employees?.workforceUtilisation?.utilisationRateLastTwelveMonths || dataRow?.externals?.workforceUtilisation?.utilisationRateLastTwelveMonths || "x");
   const y2d = parseFloat(dataRow?.employees?.workforceUtilisation?.utilisationRateYearToDate || dataRow?.externals?.workforceUtilisation?.utilisationRateYearToDate || "x");
   const june = parseFloat(dataRow?.employees?.workforceUtilisation?.lastThreeMonthsIndividually?.[2].utilisationRate || dataRow?.externals?.workforceUtilisation?.lastThreeMonthsIndividually?.[2].utilisationRate || "x");
   const july = parseFloat(dataRow?.employees?.workforceUtilisation?.lastThreeMonthsIndividually?.[1].utilisationRate || dataRow?.externals?.workforceUtilisation?.lastThreeMonthsIndividually?.[1].utilisationRate || "x");
   const august = parseFloat(dataRow?.employees?.workforceUtilisation?.lastThreeMonthsIndividually?.[0].utilisationRate || dataRow?.externals?.workforceUtilisation?.lastThreeMonthsIndividually?.[0].utilisationRate || "x");
 
-  const calculateLastMonthIncome = (person) => {
+  const calculateLastMonthIncome = ()  => {
     // Get hourly rate and utilisation data
     const hourlyRate = parseFloat(dataRow.employees?.hourlyRateForProjects || dataRow.externals?.hourlyRateForProjects || "x");
-  
-    console.log(hourlyRate)
 
     const HoursPerMonth = 160;
     
@@ -49,11 +50,8 @@ const tableData: TableDataType[] = (
     var lastMonthIncome = (workedHours * hourlyRate);
     if(Number.isNaN(lastMonthIncome))
       lastMonthIncome = 0 ;
-    console.log(lastMonthIncome);
     return lastMonthIncome;
   };
-  
-  console.log(dataRow);
 
   const row: TableDataType = {
     person: `${person} ` ,
@@ -62,7 +60,7 @@ const tableData: TableDataType[] = (
     june: `${june * 100} %`,
     july: `${july * 100} %`,
     august: `${august * 100} %`,
-    netEarningsPrevMonth: `${calculateLastMonthIncome(person)} Eur`,
+    netEarningsPrevMonth: `${euro.format(calculateLastMonthIncome(person))}`,
   };
   return row;
 });
